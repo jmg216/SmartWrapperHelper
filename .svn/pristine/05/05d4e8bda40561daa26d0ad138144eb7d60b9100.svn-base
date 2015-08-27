@@ -1,0 +1,55 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.isa.SW.utils;
+
+import com.isa.SW.entities.User;
+
+/**
+ *
+ * @author JMiraballes
+ */
+public class XMLServiceGenerator {
+    
+    public static String XPATH_USER = "/TWS/EP/PU";
+    
+    public static String getUserXPath( String cn, String ou ){
+        String xPath = XPATH_USER + "/User[@dname=\"CN="+ cn + ",OU=" + ou + "\"]";
+        return xPath;
+    }    
+    
+    public static String generarUsuarioXML( User user ){
+    String xmlUser = 
+"      	   	<User dname=\"CN="+ user.getsNameUID() + ",OU="+ user.getoNameOU() + "\">" +
+"  			<Description>"+ user.getDescription() +"</Description>" +
+"  			<IName>"+ user.getiName() +"</IName>" +
+"  			<Language>"+user.getLanguage()+"</Language>" +
+"  			<CName>" +
+"    				<Title>" + user.getcNameTitle() + "</Title>" +
+"    				<FName>" + user.getcNameFName() + "</FName>" +
+"    				<Surname>"+ user.getcNameFName() +"</Surname>" +
+"  			</CName>" +
+"  			<OName>" +
+"    				<Title>"+ user.getoNameTitle() +"</Title>" +
+"    				<OU>"+ user.getoNameOU() +"</OU>" +
+"    				<O>" + user.getoNameO() + "</O>" +
+"  			</OName>" +
+"  			<SName>" +
+"    				<UID>" + user.getsNameUID() + "</UID>" +
+"    				<Passwd>" + user.getSNamePasswd() + "</Passwd>" +
+" 			</SName>" +
+"  			<Contacts>" +
+"    				<Work>" +
+"      				<Mail>"+ user.getContactsWorkMail() + "</Mail>" +
+"      				<Phone>"+ user.getContactsWorkPhone() + "</Phone>" +
+"    				</Work>" +
+"    				<Home></Home>" +
+"  			</Contacts>" +
+"  			<Certificates></Certificates>" +
+"		</User>"; 
+        
+        return xmlUser;
+    }
+}

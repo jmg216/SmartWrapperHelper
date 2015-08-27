@@ -1,0 +1,76 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.isa.SW.services;
+
+import com.isa.SW.exceptions.SWException;
+import com.isa.SW.utils.UtilesSWHelper;
+import com.safelayer.trustedx.client.smartwrapper.Constants;
+import com.safelayer.trustedx.client.smartwrapper.SmartSignRequest;
+import com.safelayer.trustedx.client.smartwrapper.SmartSignResponse;
+import com.safelayer.trustedx.client.smartwrapper.SmartVerifyRequest;
+import com.safelayer.trustedx.client.smartwrapper.SmartVerifyResponse;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.axis.encoding.Base64;
+
+/**
+ *
+ * @author JMiraballes
+ */
+public class ServicioFirma {
+    
+    public String firmaAdjuntaPKCS7(String usuario, String password, byte[] dataToSign) throws SWException {
+        try {
+            SmartSignRequest iReq = new SmartSignRequest("https://213.37.153.67:8280/trustedx-gw/SoapGateway" /*UtilesSWHelper.getURLTrustedX()*/ );
+            iReq.setHeader( UtilesSWHelper.crearSmartHeader( usuario, password ));
+
+            iReq.setProfile(Constants.Profile.CMSPKCS7);
+            iReq.setEnvelopingSignature( true );//attached signature
+            iReq.setInputBase64Data(Base64.encode( dataToSign ));
+
+           SmartSignResponse sResp = iReq.send(); //send request
+
+            if (UtilesSWHelper.RESULTMAJOR_SUCCES_FIRMA.equals(sResp.getResultMajor())
+                    && sResp.getResultMinor() == null) {
+                        System.out.println("Firma adjunta en base64: " + sResp.getSignatureBase64());
+                        return sResp.getSignatureBase64();
+            } 
+            else {
+                throw new SWException(SWException.ERROR_EN_RESPUESTA, UtilesSWHelper.ERROR_SERVICIO_FIRMA);
+            }
+        } 
+        catch (Exception ex) {
+            Logger.getLogger(ServicioKM.class.getName()).log(Level.SEVERE, null, ex);
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al enviar solicitud: firma adjunta PKCS#7");             
+        }            
+    }
+    
+
+    public String verificarPKCS7(String usuario, String password, byte[] signature) throws SWException {
+        
+        try
+        {
+            SmartVerifyRequest vReq = new SmartVerifyRequest("https://213.37.153.67:8280/trustedx-gw/SoapGateway"/* UtilesSWHelper.getURLTrustedX()*/ );
+            vReq.setHeader( UtilesSWHelper.crearSmartHeader( usuario, password ));
+            vReq.setProfile(Constants.Profile.CMSPKCS7);
+            vReq.setSignatureBase64(Base64.encode(signature));
+
+            SmartVerifyResponse vResp = vReq.send();
+
+            if (UtilesSWHelper.RESULTMAJOR_SUCCESS.equals(vResp.getResultMajor())
+                    && UtilesSWHelper.RESULTMINOR_SUCCESS_VERIFY.equals(vResp.getResultMinor())) {
+                        return vResp.getDocumentBase64Data();       
+            } 
+            else{
+                throw new SWException(SWException.ERROR_EN_RESPUESTA, UtilesSWHelper.ERROR_SERVICIO_FIRMA);
+            }
+        }
+        catch (Exception ex) {
+            Logger.getLogger(ServicioKM.class.getName()).log(Level.SEVERE, null, ex);
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al enviar solicitud: verificando firma");             
+        }  
+    }
+}

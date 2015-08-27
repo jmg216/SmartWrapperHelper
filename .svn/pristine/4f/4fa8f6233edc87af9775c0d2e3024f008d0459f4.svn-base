@@ -1,0 +1,179 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.isa.SW.services;
+
+import com.isa.SW.exceptions.SWException;
+import com.isa.SW.utils.UtilesSWHelper;
+import com.isa.SW.utils.XMLServiceGenerator;
+import com.safelayer.trustedx.client.smartwrapper.SmartCountRequest;
+import com.safelayer.trustedx.client.smartwrapper.SmartCountResponse;
+import com.safelayer.trustedx.client.smartwrapper.SmartInsertRequest;
+import com.safelayer.trustedx.client.smartwrapper.SmartInsertResponse;
+import com.safelayer.trustedx.client.smartwrapper.SmartSearchRequest;
+import com.safelayer.trustedx.client.smartwrapper.SmartSearchResponse;
+import com.safelayer.trustedx.client.smartwrapper.SmartUpdateRequest;
+import com.safelayer.trustedx.client.smartwrapper.SmartUpdateResponse;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author JMiraballes
+ * 
+ * Clase encargada de encaspular todos los llamados al los 
+ * servicios EP-EntityProfiler, utilizando el api SmartWrapper.
+ * 
+ */
+public class ServicioEP {
+    
+    /**
+     * Método que inserta una entidad en trustedX.
+     * 
+     * @param usuario
+     * @param password
+     * @param xPath
+     * @param data
+     * @throws SWException
+     */
+    public void insert( String usuario, String password, String xPath, String data ) throws SWException{
+        try{
+            SmartInsertRequest iReq = new SmartInsertRequest( UtilesSWHelper.getURLTrustedX() );
+            iReq.setHeader( UtilesSWHelper.crearSmartHeader( usuario, password ));
+            iReq.setData(data);
+            iReq.setXPath(xPath);
+
+            SmartInsertResponse iRes = iReq.send();
+            if (UtilesSWHelper.RESULTMAJOR_SUCCESS.equals(iRes.getResult())){
+                System.out.println(UtilesSWHelper.OPERATION_OK);    	
+            }
+            else{
+                System.out.println(UtilesSWHelper.OPERACION_FALLIDA);
+                throw new SWException(SWException.ERROR_EN_RESPUESTA, UtilesSWHelper.ERROR_SERVICIO_EP_INSERT, iRes.getResult()); 
+            }
+        }
+        catch(Exception ex){
+            Logger.getLogger(ServicioEP.class.getName()).log(Level.SEVERE, null, ex);
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al enviar solicitud: insertar entidad", ""); 
+        }
+    }
+    
+    /**
+     * Método que consulta una entidad en trustedX. Si existe devuelve 
+     * true sino devuelve false.
+     * 
+     * @param  usuario
+     * @param password
+     * @param xPath
+     * @return boolean
+     * @throws SWException
+     */
+    public boolean existe(String usuario, String password, String xPath ) throws SWException{
+        
+        try{
+            SmartSearchRequest sReq = new SmartSearchRequest( UtilesSWHelper.getURLTrustedX() );
+            sReq.setHeader(UtilesSWHelper.crearSmartHeader(usuario, password)); 
+            sReq.setXPath(xPath);
+
+            SmartSearchResponse sRes = sReq.send();
+            if (UtilesSWHelper.RESULTMAJOR_SUCCESS.equals(sRes.getResult())) {
+                System.out.println( UtilesSWHelper.OPERATION_OK ); 
+                System.out.println( "Entidad existente: " + sRes.getData()); 
+                return sRes.getData();
+            } 
+            else {
+               throw new SWException(SWException.ERROR_EN_RESPUESTA, UtilesSWHelper.ERROR_SERVICIO_EP_INSERT, sRes.getResult());    
+            }
+        }
+        catch(Exception ex){
+            Logger.getLogger(ServicioEP.class.getName()).log(Level.SEVERE, null, ex);
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al enviar solicitud: buscar entidad", "");         
+        }
+    }
+
+    /**
+     * Método que devuelve la cantidad de entidades existentes en trustedX.
+     * 
+     * @param usuario
+     * @param password
+     * @param xPath
+     * @return int
+     * @throws SWException
+     * 
+     */
+    public int count(String usuario, String password, String xPath ) throws SWException{
+        try{
+            SmartCountRequest cReq = new SmartCountRequest( UtilesSWHelper.getURLTrustedX() );
+
+            cReq.setHeader(UtilesSWHelper.crearSmartHeader( usuario, password )); 
+            cReq.setXPath(xPath);        
+
+            SmartCountResponse cRes = cReq.send();
+
+            if (UtilesSWHelper.RESULTMAJOR_SUCCESS.equals(cRes.getResult())) {
+                System.out.println(UtilesSWHelper.OPERATION_OK); 
+                return cRes.getData(); 
+            } 
+            else{
+                throw new SWException(SWException.ERROR_EN_RESPUESTA, UtilesSWHelper.ERROR_SERVICIO_EP_COUNT, cRes.getResult());                 
+            }
+        }
+        catch(Exception ex){ 
+            Logger.getLogger(ServicioEP.class.getName()).log(Level.SEVERE, null, ex);
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al enviar solicitud: contar entidad", "");           
+        }
+    }
+    
+    public boolean update(String usuario, String password, String xPath, String data) throws SWException{
+        
+        try{
+            SmartUpdateRequest sReq = new SmartUpdateRequest( UtilesSWHelper.getURLTrustedX() );
+            
+            sReq.setHeader(UtilesSWHelper.crearSmartHeader( usuario, password )); 
+            sReq.setXPath(xPath); 
+            sReq.setData(data);
+            
+            SmartUpdateResponse uRes = sReq.send();
+
+            if (UtilesSWHelper.RESULTMAJOR_SUCCESS.equals(uRes.getResult())){
+                System.out.println(" Operation OK");
+                return true;                 
+            }
+            else {
+               return false;
+            }
+        }
+        catch(Exception ex){ 
+            Logger.getLogger(ServicioEP.class.getName()).log(Level.SEVERE, null, ex);
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al enviar solicitud: actualizar entidad", "");           
+        }        
+    }
+    
+    public void read( String usuario, String password, String xPath ){
+        
+    }
+    
+    public void eliminar(String usuario, String password, String xPath ){
+        
+    }
+    
+    /**
+     * Método para modificar el password de un usuario.
+     * @param adminUser
+     * @param adminPass
+     * @param dn
+     * @param password
+     * @return 
+     * @throws com.isa.SW.exceptions.SWException 
+     */
+    public boolean modificarPassword( String adminUser, String adminPass, String dn, String password ) throws SWException{
+        
+        String data = "<Passwd>" + password + "</Passwd>";
+        String xPath = XMLServiceGenerator.XPATH_USER + "/User[@dname='"+ dn +"']/SName/Passwd";
+        //"/TWS/EP/WS/Service[@dname='CN=ProxyWS, OU=Demo, O=TrustedX, C=ES']/Description";
+        return update(adminUser, adminPass, xPath, data);
+        
+    }
+}

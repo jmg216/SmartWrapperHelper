@@ -1,0 +1,84 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.isa.SW.utils;
+
+import com.safelayer.trustedx.client.smartwrapper.SmartHeader;
+import java.io.IOException;
+import java.net.URL;
+
+/**
+ *
+ * @author JMiraballes
+ */
+public class UtilesSWHelper {
+        
+    public static final String RESULTMAJOR_SUCCESS = "success";
+    public static final String RESULTMAJOR_SUCCES_FIRMA = "urn:oasis:names:tc:dss:1.0:resultmajor:Success";
+    public static final String RESULTMAJOR_SUCCESS_KM = "http://www.w3.org/2002/03/xkms#Success";
+    public static final String SERVICE_POLICY_KM = "urn:safelayer:km:politica";
+    public static final String SERVICE_POLICY_DS = "urn:safelayer:tws:policies:generation:igdoc";
+    public static final String STATUS_VALID_KM = "http://www.w3.org/2002/03/xkms#Valid";
+    public static final String RESULTMINOR_SUCCESS_VERIFY = "urn:oasis:names:tc:dss:1.0:resultminor:ValidSignature_OnAllDocuments";
+    
+//    public static final String FOOT_PRINT = "8d4a9576a8b746213edf0e6e81ecf3af00c2d490";
+//    public static final String FOOT_PRINT_SHA1 = "58A4CED8BF97C16013D5FEDCA00F65BC9FFF21E0";
+    
+    //Mensajes
+    public static final String ERROR_AUTENTICACION_MSJ = "Se ha producido un error al autenticar el usuario.";
+    public static final String ERROR_SERVICIO_FIRMA = "Se ha producido un error mientras se validaba una firma.";
+    public static final String ERROR_SERVICIO_KM_PKCS12 = "Se ha producido un error mientras se insertaba un certificado.";
+    public static final String ERROR_SERVICIO_KM_X509 = "Se ha producido un error mientras se generaba el certificado.";
+    public static final String ERROR_SERVICIO_KM_PKCS10 = "Se ha producido un error mientras se generaba la clave pkcs10.";
+    public static final String ERROR_SERVICIO_KM_INSERT_CERT = "Se ha producido un error mientras se insertaba un certificado.";
+    
+    public static final String ERROR_SERVICIO_EP_INSERT = "Se ha producido un error al insertar una entidad en EP.";
+    public static final String ERROR_SERVICIO_EP_BUSCAR = "Se ha producido un error al buscar una entidad en EP.";
+    public static final String ERROR_SERVICIO_EP_COUNT = "Se ha producido un error al contar entidades en EP.";
+    public static final String ERROR_SERVICIO_EP_READ = "Se ha producido un error al leer entidad en EP.";
+    
+    public static final String OPERATION_OK = "Operación Correcta.";
+    public static final String OPERACION_FALLIDA = "Operación Fallida.";
+    
+    private static URL codeBase;    
+    
+    public static void setCodeBase( URL codebase ){
+        codeBase = codebase;
+    }
+    
+    public static URL getCodeBase(){
+        return codeBase;
+    }
+    
+    public static boolean isNullOrEmpty(String str){
+        return (str == null || str.isEmpty());
+    }
+    
+    
+    public static SmartHeader crearSmartHeader(String usuario, String password) throws Exception{
+        
+        SmartHeader smartHeader = new SmartHeader();
+        //MessageDigest sha = MessageDigest.getInstance("SHA1");
+        smartHeader.setUsername( usuario );
+        smartHeader.setPassword( password );
+        //smartHeader.setPassword( Base64.encode(sha.digest(password.getBytes())) );
+        //smartHeader.setPasswordType(Constants.AA.PasswordType.DIGEST);
+        return smartHeader;
+    }
+    
+    public static String getURLTrustedX() throws IOException{
+        return UtilesResources.getProperty("swHelperConfig.trustexURL");
+    }
+    
+    public static String getAdminUsuario() throws IOException{
+        return UtilesResources.getProperty("swHelperConfig.adminUser");
+    }
+    
+    public static String getAdminPassword() throws IOException{
+        return UtilesResources.getProperty("swHelperConfig.adminPass");
+    }
+    
+    
+}

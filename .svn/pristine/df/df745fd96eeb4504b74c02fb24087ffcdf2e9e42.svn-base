@@ -1,0 +1,139 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.isa.SW.services;
+
+import com.isa.SW.exceptions.SWException;
+import com.isa.SW.utils.UtilesSWHelper;
+import com.safelayer.trustedx.client.smartwrapper.Constants;
+import com.safelayer.trustedx.client.smartwrapper.SmartSignRequest;
+import com.safelayer.trustedx.client.smartwrapper.SmartSignResponse;
+import com.safelayer.trustedx.client.smartwrapper.SmartVerifyRequest;
+import com.safelayer.trustedx.client.smartwrapper.SmartVerifyResponse;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.axis.AxisFault;
+import org.apache.axis.encoding.Base64;
+
+/**
+ *
+ * @author JMiraballes
+ */
+public class ServicioFirma {
+    
+    /**
+     * Método que firma datos con un PKCS#7.
+     * @param usuario
+     * @param password
+     * @param dataToSign
+     * @return 
+     * @throws com.isa.SW.exceptions.SWException
+     */
+    public String firmaAdjuntaPKCS7(String usuario, String password, byte[] dataToSign) throws SWException {
+        try {
+            SmartSignRequest iReq = new SmartSignRequest( UtilesSWHelper.getURLTrustedX() );
+            iReq.setHeader( UtilesSWHelper.crearSmartHeader( usuario, password ));
+            
+            iReq.setProfile(Constants.Profile.CMSPKCS7);
+            iReq.setEnvelopingSignature( true );//attached signature
+            iReq.setServicePolicy(UtilesSWHelper.SERVICE_POLICY_DS);
+            iReq.setInputBase64Data(Base64.encode( dataToSign ));
+            
+            SmartSignResponse sResp = iReq.send(); //send request
+
+            if (UtilesSWHelper.RESULTMAJOR_SUCCES_FIRMA.equals(sResp.getResultMajor())
+                    && sResp.getResultMinor() == null) {
+                        System.out.println("Firma adjunta en base64: " + sResp.getSignatureBase64());
+                        return sResp.getSignatureBase64();
+            }
+            else {
+                throw new SWException(SWException.ERROR_EN_RESPUESTA, UtilesSWHelper.ERROR_SERVICIO_FIRMA);
+            }
+        } 
+        catch(AxisFault ex){
+            ex.printStackTrace();
+            if (SWException.ERROR_DE_AUTENTICACION.equals(ex.getMessage())){
+                throw new SWException(SWException.ERROR_DE_AUTENTICACION, UtilesSWHelper.ERROR_AUTENTICACION_MSJ);             
+            }
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al enviar solicitud: firma adjunta PKCS#7");  
+        } 
+        catch (Exception ex) {
+            Logger.getLogger(ServicioKM.class.getName()).log(Level.SEVERE, null, ex);
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al enviar solicitud: firma adjunta PKCS#7");             
+        }            
+    }
+    
+    
+    public String firmaXMLEnvelped(String usuario, String password, String dn, byte[] dataToSign) throws SWException {    
+        try{
+            SmartSignRequest iReq = new SmartSignRequest( UtilesSWHelper.getURLTrustedX() );
+            iReq.setHeader( UtilesSWHelper.crearSmartHeader( usuario, password ));
+            
+            iReq.setProfile(Constants.Profile.XADES); 
+            iReq.setSignaturePlacement(Constants.SignaturePlacement.ENVELOPED); 
+            iReq.setXmlEnvelopedXPathFirstChildOf("/"); 
+            iReq.setInputXmlBase64(Base64.encode(dataToSign)); 
+            iReq.setXmlReturnBase64(true); 
+            iReq.setKeySubjectName(dn);            
+            SmartSignResponse sResp = iReq.send();
+            
+            if ( UtilesSWHelper.RESULTMAJOR_SUCCES_FIRMA.equals(sResp.getResultMajor()) && 
+                    sResp.getResultMinor() == null) { 
+                
+                String signatureBase64 = sResp.getDocumentWithSignatureXmlBase64(); 
+                return signatureBase64; 
+            } 
+            else { 
+                throw new Exception("Error signing:" + sResp.getResultMessage()); 
+            }            
+        }
+        catch(Exception ex){
+            Logger.getLogger(ServicioKM.class.getName()).log(Level.SEVERE, null, ex);
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al enviar solicitud: firma XML envoloped");                         
+        }
+    }
+    
+
+    /**
+     * Método que verifica una firma PKCS#7.
+     * 
+     * @param usuario
+     * @param password
+     * @param signatureBase64
+     * @return 
+     * @throws com.isa.SW.exceptions.SWException 
+     */
+    public String verificarPKCS7(String usuario, String password, String signatureBase64) throws SWException {
+        
+        try
+        {
+            SmartVerifyRequest vReq = new SmartVerifyRequest( UtilesSWHelper.getURLTrustedX() );
+            vReq.setHeader( UtilesSWHelper.crearSmartHeader( usuario, password ));
+            vReq.setProfile(Constants.Profile.CMSPKCS7);
+            vReq.setSignatureBase64(signatureBase64);
+
+            SmartVerifyResponse vResp = vReq.send();
+
+            if (UtilesSWHelper.RESULTMAJOR_SUCCES_FIRMA.equals(vResp.getResultMajor())
+                    && UtilesSWHelper.RESULTMINOR_SUCCESS_VERIFY.equals(vResp.getResultMinor())) {
+                        return vResp.getDocumentBase64Data();       
+            } 
+            else{
+                throw new SWException(SWException.ERROR_EN_RESPUESTA, UtilesSWHelper.ERROR_SERVICIO_FIRMA);
+            }
+        }
+        catch(AxisFault ex){
+            if (SWException.ERROR_DE_AUTENTICACION.equals(ex.getMessage())){
+                throw new SWException(SWException.ERROR_DE_AUTENTICACION, UtilesSWHelper.ERROR_AUTENTICACION_MSJ);             
+            }
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al verificar firma PKCS#7");  
+        }         
+        catch (Exception ex) {
+            Logger.getLogger(ServicioKM.class.getName()).log(Level.SEVERE, null, ex);
+            throw new SWException(SWException.ERROR_EN_SERVICIO, "Error al verificar firma PKCS#7");             
+        }  
+    }
+    
+}

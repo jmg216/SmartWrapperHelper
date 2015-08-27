@@ -1,0 +1,84 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.isa.SW;
+
+import com.isa.SW.exceptions.SWException;
+import com.isa.SW.services.ServicioEP;
+import com.isa.SW.services.ServicioFirma;
+import com.isa.SW.services.ServicioKM;
+import com.isa.SW.utils.UtilesSWHelper;
+import com.isa.SW.utils.XMLServiceGenerator;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import org.apache.axis.encoding.Base64;
+
+/**
+ *
+ * @author JMiraballes
+ */
+public class MainPruebaSW {
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        try 
+        {
+            //UtilesSWHelper.setCodeBase(new URL("http://desarrollo.isaltda.com.uy/apprequest/"));
+//            ServicioFirma servF = new ServicioFirma();
+//            String data = "Dos para firmar.at";
+//            String sign =  servF.firmaAdjuntaPKCS7("Usuario Uno", "1111", data.getBytes());
+//            System.out.println("Se ha firmado correctamente el documento: " + sign);
+//            String verif = servF.verificarPKCS7("Usuario Uno", "1111", sign);           
+//            System.out.println("Se ha verificado el la firma correctamente: " + verif);           
+            
+            //ServicioKM servKM = new ServicioKM();
+            //servKM.generarPKCS10("Usuario Uno", "1112", "CN=Usuario Uno,OU=IGDOC");
+            
+            //ServicioEP serviEP = new ServicioEP();
+            //serviEP.existe("Usuario Uno", "1111", "/TWS/EP/PU/User[@dname='CN=Usuario Uno,OU=IGDOC']");
+            
+           //ServicioFirma servF = new ServicioFirma();
+           //String dn = "CN=DesarrolloCA, O=DesarrolloISA, C=UY";
+           //String data = "\"<library Id='c123tpe4ryta6di24'>\" +\"<book Id='1'>\" +\" <title>The dark house</title>\" +\"</book>\" +\"<book Id='2'>\" +\" <title>The laundry</title>\" +\"</book>\" +\"</library>\";";
+           //String sign =  servF.firmaXMLEnvelped("Usuario Uno", "1111", dn, data.getBytes()); 
+           //System.out.println("Se ha firmado correctamente el documento: " + sign);
+
+            
+            //ServicioEP serviEP = new ServicioEP();
+            //serviEP.modificarPassword("admin", "demodemo", "CN=Usuario Uno,OU=IGDOC", "7777");
+            
+            //ServicioKM servicioKM = new ServicioKM();
+            //String usuario, String password, String certCA, String thumbPrint, String certFirmado, String dn
+            //servicioKM.insertarCertificado("Usuario Uno", "", "fdsafdsa", "fdsafds", "fdsfdsa", "CN='fdsa'");
+            
+            
+            UtilesSWHelper.setCodeBase(new URL("http://desarrollo.isaltda.com.uy/appFirma/"));
+            ServicioEP serviEP = new ServicioEP();
+            String result = serviEP.read("imm1", "3333", XMLServiceGenerator.getUserXPath("IMM1", "IGDOC"));
+            String nuevoXmlUsuario = XMLServiceGenerator.actualizarUsuario(result, "Passwd", "4444");
+            serviEP.update("imm1", "3333", XMLServiceGenerator.getUserXPath("IMM1", "IGDOC"), nuevoXmlUsuario);
+            
+            String nuevoUsuario = serviEP.read("wsigdoc", "isa123", XMLServiceGenerator.getUserXPath("IMM1", "IGDOC"));
+            System.out.println("Usuario Nuevo: " + nuevoUsuario);
+            
+            
+        } 
+        catch (SWException ex){
+            Logger.getLogger(MainPruebaSW.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("SWException tipo: " + ex.getTipo() );
+            System.out.println("SWException mensaje: " + ex.getMensaje() );
+        }
+        catch (Exception ex) {
+            Logger.getLogger(MainPruebaSW.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("FALLO!!");
+        }
+        
+    }
+    
+}
