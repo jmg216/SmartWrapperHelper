@@ -5,6 +5,7 @@
  */
 package com.isa.SW.services;
 
+import com.isa.SW.entities.VerifyResponse;
 import com.isa.SW.exceptions.SWException;
 import com.isa.SW.utils.UtilesSWHelper;
 import com.safelayer.trustedx.client.smartwrapper.Constants;
@@ -62,7 +63,7 @@ public class ServicioDSV {
         }  
     }    
     
-    public boolean verificarXMLEnveloping(String artifact, String dataSigned) throws SWException {    
+    public VerifyResponse verificarXMLEnveloping(String artifact, String dataSigned) throws SWException {    
         try{
             
             SmartVerifyRequest iReq = new SmartVerifyRequest( UtilesSWHelper.getURLTrustedX() );
@@ -71,11 +72,27 @@ public class ServicioDSV {
             iReq.setProfile(Constants.Profile.XADES);
             iReq.setSignatureXml( dataSigned );
             iReq.setAddSignatureForm(true);
-            
-            SmartVerifyResponse sResp = iReq.send();
+            iReq.setAddAdditionalInfoValues(true);
+            iReq.setAddSignedAttributes(true);
+            iReq.setAddOtherVerifyResponses(true);
 
-            return UtilesSWHelper.RESULTMAJOR_SUCCES_FIRMA.equals(sResp.getResultMajor()) && 
-                    UtilesSWHelper.RESULTMINOR_SUCCESS_VERIFY.equals(sResp.getResultMinor());           
+            SmartVerifyResponse sResp = iReq.send();
+            VerifyResponse vResp = new VerifyResponse();
+            
+            if (UtilesSWHelper.RESULTMAJOR_SUCCES_FIRMA.equals(sResp.getResultMajor()) && 
+                    UtilesSWHelper.RESULTMINOR_SUCCESS_VERIFY.equals(sResp.getResultMinor())){
+                vResp.setValida(true);
+                if (sResp.getSignature(0) != null){
+                    vResp.setCn( UtilesSWHelper.getCN( sResp.getSignature(0).getSignerIdentity()) );
+                }
+            }
+            else{
+                vResp.setValida(false);
+                if (sResp.getSignature(0) != null){
+                    vResp.setCn( UtilesSWHelper.getCN( sResp.getSignature(0).getSignerIdentity()) );
+                }
+            }
+            return vResp;
         }
         catch(Exception ex){
             Logger.getLogger(ServicioKM.class.getName()).log(Level.SEVERE, null, ex);

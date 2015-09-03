@@ -141,4 +141,24 @@ public class UtilesSWHelper {
         String adminFromProperties = UtilesResources.getProperty("swHelperConfig.adminFromProperties");
         return adminFromProperties.equals("true");
     }
+    
+    
+    /**
+     * Función para obtener el nombre identificado por CN= 
+     * @return String
+     * @param nombre
+     */
+    public static String getCN(String nombre){
+        String[] arreglo;
+        arreglo = nombre.split(",");
+        for (int i = 0; i < arreglo.length; i++){
+            if(arreglo[i].startsWith(" CN=")||arreglo[i].startsWith("CN=")){
+                if(arreglo[i].startsWith(" CN="))
+                    return arreglo[i].replace(" CN=", "");
+                else
+                    return arreglo[i].replace("CN=", "");
+            }
+        }
+        return "";
+    }    
 }
