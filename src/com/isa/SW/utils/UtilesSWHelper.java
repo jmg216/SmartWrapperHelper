@@ -43,8 +43,8 @@ public class UtilesSWHelper {
     public static final String OPERACION_FALLIDA = "Operación Fallida.";
     
     //Contraseña y password de usuario consumidor de ws.
-    public static final String ADMIN_USUARIO = "super";
-    public static final String ADMIN_PASSWORD = "super";
+    public static final String ADMIN_USUARIO = "wsigdoc";
+    public static final String ADMIN_PASSWORD = "wsigdoc";
     
     public static final String ADMIN_VERIFY_USUARIO = "trustedx";
     public static final String ADMIN_VERIFY_PASSWORD = "trustedx";    
